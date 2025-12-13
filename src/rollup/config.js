@@ -16,7 +16,7 @@ import { isNiceExternal, createExternals } from './externals.js'
  * @param {string} [options.dtsInput] - Custom input for dts (default: dist/esm/types/index.d.ts)
  * @returns {Object[]} Rollup configuration array
  */
-export function createConfig(options = {}) {
+export function createConfiguration(options = {}) {
   const {
     input = 'src/index.ts',
     output = {},
@@ -28,7 +28,7 @@ export function createConfig(options = {}) {
   } = options
 
   if (!plugins.length) {
-    throw new Error('nice-config: plugins array is required. Import and pass your rollup plugins.')
+    throw new Error('nice-configuration: plugins array is required. Import and pass your rollup plugins.')
   }
 
   const external = additionalExternals.length
