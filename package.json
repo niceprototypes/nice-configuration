@@ -8,7 +8,9 @@
     ".": "./src/index.js",
     "./rollup": "./src/rollup/index.js",
     "./typescript/base": "./src/typescript/base.json",
-    "./typescript/react": "./src/typescript/react.json"
+    "./typescript/react": "./src/typescript/react.json",
+    "./jest/react": "./src/jest/react.js",
+    "./jest/css-mock": "./src/jest/css-mock.js"
   },
   "files": [
     "src"
@@ -20,7 +22,8 @@
     "nice",
     "configuration",
     "rollup",
-    "typescript"
+    "typescript",
+    "jest"
   ],
   "license": "MIT",
   "repository": {
@@ -35,16 +38,24 @@
     "@rollup/plugin-commonjs": ">=25.0.0",
     "@rollup/plugin-node-resolve": ">=15.0.0",
     "@rollup/plugin-typescript": ">=11.0.0",
+    "@testing-library/jest-dom": ">=6.0.0",
+    "jest": ">=29.0.0",
+    "jest-environment-jsdom": ">=29.0.0",
     "rollup": ">=4.0.0",
     "rollup-plugin-dts": ">=6.0.0",
-    "rollup-plugin-peer-deps-external": ">=2.0.0"
+    "rollup-plugin-peer-deps-external": ">=2.0.0",
+    "ts-jest": ">=29.0.0"
   },
   "peerDependenciesMeta": {
     "@rollup/plugin-commonjs": { "optional": true },
     "@rollup/plugin-node-resolve": { "optional": true },
     "@rollup/plugin-typescript": { "optional": true },
+    "@testing-library/jest-dom": { "optional": true },
+    "jest": { "optional": true },
+    "jest-environment-jsdom": { "optional": true },
     "rollup": { "optional": true },
     "rollup-plugin-dts": { "optional": true },
-    "rollup-plugin-peer-deps-external": { "optional": true }
+    "rollup-plugin-peer-deps-external": { "optional": true },
+    "ts-jest": { "optional": true }
   }
 }
