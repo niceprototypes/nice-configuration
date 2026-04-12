@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "nice-generate-exports config",
+  "description": "Declares the public export surface of a nice-react-* component package.",
+  "type": "object",
+  "required": ["components"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this schema file for IDE autocomplete."
+    },
+    "description": {
+      "type": "string",
+      "description": "Short JSDoc description emitted above exports. Max 5 lines."
+    },
+    "default": {
+      "type": "string",
+      "description": "Component name to re-export as the package default export."
+    },
+    "components": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Component names. Generator emits `export * from \"./components/{Name}\"` for each."
+    },
+    "tokens": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Subset of components that have token wrappers. Emits `{Name}Styles, get{Name}Token` from ./tokens."
+    },
+    "services": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Function names exported from ./services."
+    },
+    "constants": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Constant names exported from ./constants."
+    }
+  },
+  "additionalProperties": false
+}
