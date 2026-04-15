@@ -3,41 +3,69 @@
  */
 
 import { isNiceExternal, createExternals } from './externals.js'
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import typescript from '@rollup/plugin-typescript'
+import peerDepsExternal from 'rollup-plugin-peer-deps-external'
+import dts from 'rollup-plugin-dts'
 
 /**
  * Creates a standard rollup configuration for nice-* packages
  *
  * @param {Object} options
  * @param {string} [options.input='src/index.ts'] - Entry point
+ * @param {string} [options.tsconfig='./tsconfig.json'] - Path to tsconfig
  * @param {Object} [options.output] - Custom output config (merged with defaults)
- * @param {Function[]} [options.plugins] - Plugins array (required - allows consumer to control plugin instances)
+ * @param {Array} [options.plugins] - Override default plugins (escape hatch)
  * @param {string[]} [options.additionalExternals] - Extra packages to externalize
+ * @param {string[]} [options.bundlePackages] - nice-* packages to bundle instead of externalize
  * @param {boolean} [options.dts=true] - Generate declaration bundle
- * @param {string} [options.dtsInput] - Custom input for dts (default: dist/esm/types/index.d.ts)
+ * @param {string} [options.dtsInput='dist/types/index.d.ts'] - Custom input for dts
  * @returns {Object[]} Rollup configuration array
  */
 export function createConfiguration(options = {}) {
   const {
     input = 'src/index.ts',
+    tsconfig = './tsconfig.json',
     output = {},
-    plugins = [],
+    plugins = null,
     additionalExternals = [],
-    dts = true,
-    dtsInput = 'dist/esm/types/index.d.ts',
-    dtsPlugin = null,
+    bundlePackages = [],
+    dts: includeDts = true,
+    dtsInput = 'dist/types/index.d.ts',
   } = options
 
-  if (!plugins.length) {
-    throw new Error('nice-configuration: plugins array is required. Import and pass your rollup plugins.')
-  }
+  const defaultPlugins = [
+    peerDepsExternal(),
+    resolve({ browser: true }),
+    commonjs(),
+    typescript({
+      tsconfig,
+      sourceMap: true,
+      inlineSources: true
+    })
+  ]
 
-  const external = additionalExternals.length
-    ? createExternals(additionalExternals)
+  const external = (additionalExternals.length || bundlePackages.length)
+    ? createExternals({ additional: additionalExternals, bundle: bundlePackages })
     : isNiceExternal
 
   const configs = [
     {
       input,
+      cache: false,
+      watch: {
+        buildDelay: 200,
+        clearScreen: false,
+        chokidar: {
+          awaitWriteFinish: {
+            stabilityThreshold: 150,
+            pollInterval: 50
+          },
+          usePolling: true,
+          interval: 100
+        }
+      },
       output: [
         {
           file: 'dist/index.js',
@@ -54,16 +82,16 @@ export function createConfiguration(options = {}) {
           ...output,
         },
       ],
-      plugins,
+      plugins: plugins ?? defaultPlugins,
       external,
     },
   ]
 
-  if (dts && dtsPlugin) {
+  if (includeDts) {
     configs.push({
       input: dtsInput,
       output: [{ file: 'dist/index.d.ts', format: 'esm' }],
-      plugins: [dtsPlugin],
+      plugins: [dts()],
     })
   }
 
