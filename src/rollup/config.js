@@ -2,6 +2,7 @@
  * Rollup configuration factory for nice-* packages
  */
 
+import * as fs from 'fs'
 import { isNiceExternal, createExternals } from './externals.js'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
@@ -21,6 +22,7 @@ import dts from 'rollup-plugin-dts'
  * @param {string[]} [options.bundlePackages] - nice-* packages to bundle instead of externalize
  * @param {boolean} [options.dts=true] - Generate declaration bundle
  * @param {string} [options.dtsInput='dist/types/index.d.ts'] - Custom input for dts
+ * @param {boolean} [options.clean=true] - Wipe dist/ before each build to prevent stale orphan declarations
  * @returns {Object[]} Rollup configuration array
  */
 export function createConfiguration(options = {}) {
@@ -33,7 +35,14 @@ export function createConfiguration(options = {}) {
     bundlePackages = [],
     dts: includeDts = true,
     dtsInput = 'dist/types/index.d.ts',
+    clean = true,
   } = options
+
+  // Clean dist/ before each build. rollup-plugin-dts will otherwise re-bundle
+  // d.ts files left over from a prior file layout (single-file ↔ folder, rename).
+  if (clean) {
+    fs.rmSync('dist', { recursive: true, force: true })
+  }
 
   const defaultPlugins = [
     peerDepsExternal(),
