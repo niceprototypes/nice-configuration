@@ -3,11 +3,10 @@
  */
 
 import * as fs from 'fs'
-import { isNiceExternal, createExternals } from './externals.js'
+import { createExternals } from './externals.js'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
-import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 import dts from 'rollup-plugin-dts'
 
 /**
@@ -45,7 +44,6 @@ export function createConfiguration(options = {}) {
   }
 
   const defaultPlugins = [
-    peerDepsExternal(),
     resolve({ browser: true }),
     commonjs(),
     typescript({
@@ -55,9 +53,9 @@ export function createConfiguration(options = {}) {
     })
   ]
 
-  const external = (additionalExternals.length || bundlePackages.length)
-    ? createExternals({ additional: additionalExternals, bundle: bundlePackages })
-    : isNiceExternal
+  // Always use createExternals — it reads peerDependencies from the consumer's
+  // package.json, replacing the role formerly played by rollup-plugin-peer-deps-external.
+  const external = createExternals({ additional: additionalExternals, bundle: bundlePackages })
 
   const configs = [
     {

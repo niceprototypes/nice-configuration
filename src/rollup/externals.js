@@ -5,10 +5,27 @@
  * - All nice-* packages and subpaths (including CSS imports)
  * - React ecosystem
  * - styled-components
+ * - The consuming package's declared peerDependencies (read from ./package.json)
  */
+
+import * as fs from 'fs'
 
 const REACT_PACKAGES = ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime']
 const STYLE_PACKAGES = ['styled-components']
+
+/**
+ * Reads peerDependencies from the consuming package's package.json
+ * @param {string} [packageJsonPath='./package.json'] - Path relative to rollup's cwd
+ * @returns {string[]} Array of peer-dependency package names (empty on read/parse error)
+ */
+function readPeerDependencies(packageJsonPath = './package.json') {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+    return Object.keys(pkg.peerDependencies || {})
+  } catch {
+    return []
+  }
+}
 
 /**
  * Checks if an id matches a package (exact match or subpath)
@@ -32,7 +49,7 @@ export function isNiceExternal(id, bundlePackages = []) {
     if (matchesPackage(id, pkg)) return false
   }
 
-  // All nice-* packages and any subpath (handles nice-styles/variables.css, etc.)
+  // All nice-* packages and any subpath (handles nice-styles/tokens.css, etc.)
   if (id.startsWith('nice-')) return true
 
   // React ecosystem
@@ -57,11 +74,19 @@ export function createExternals(options = {}) {
     ? { additional: options, bundle: [] }
     : options
 
+  // Read peerDependencies once at factory-call time — same lifetime as the rollup build
+  const peerDeps = readPeerDependencies()
+
   return (id) => {
     // Check bundle overrides first
     for (const pkg of bundle) {
       if (matchesPackage(id, pkg)) return false
     }
-    return isNiceExternal(id) || additional.includes(id)
+    if (isNiceExternal(id)) return true
+    if (additional.includes(id)) return true
+    for (const pkg of peerDeps) {
+      if (matchesPackage(id, pkg)) return true
+    }
+    return false
   }
 }

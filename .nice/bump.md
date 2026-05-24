@@ -1,1 +1,2 @@
+[2026-05-23 20:07] patch: Drop `rollup-plugin-peer-deps-external` dependency — peer-dependency externalization is now performed inline by `createExternals` in `src/rollup/externals.js` (reads the consumer's package.json peerDependencies and matches with the same exact/subpath rule as nice-*). Consumers no longer need the plugin in devDependencies. Rollup output unchanged.
 [2026-05-07 00:48] minor: Auto-clean dist/ before each rollup build via clean option (default true)
