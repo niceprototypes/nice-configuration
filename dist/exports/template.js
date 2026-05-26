@@ -33,7 +33,7 @@ export function generateIndexContent(config) {
     const tokens = config.tokens ?? [];
     if (tokens.length > 0) {
         const tokenExports = tokens
-            .map(name => `${name}Styles, get${name}Token`)
+            .map(name => `get${name}Token`)
             .join(", ");
         lines.push(`export { ${tokenExports} } from "./tokens"`);
     }
