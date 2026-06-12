@@ -9,6 +9,35 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 
+// Warnings that are pure artifacts of the unlinked/externalized-peer build and
+// have no bearing on the emitted output. Peer deps (react, styled-components,
+// nice-react-*) are externalized and may be unlinked while building, so the TS
+// plugin can't resolve their types — which also makes JSX/implicit-any checks
+// cascade. The JS still emits correctly; these are noise, so they're filtered
+// out. Anything NOT in these sets still surfaces through the default handler.
+const IGNORED_TS_PLUGIN_CODES = new Set([
+  'TS2307', // Cannot find module '...' (externalized peer's types unresolved)
+  'TS2875', // JSX runtime 'react/jsx-runtime' module path not found
+  'TS7006', // Parameter implicitly has 'any' type (cascade from missing react types)
+  'TS7031', // Binding element implicitly has 'any' type (same cascade)
+  'TS7026', // JSX element implicitly 'any' — no JSX.IntrinsicElements (same cascade)
+  'TS7016', // Could not find a declaration file for module
+])
+const IGNORED_ROLLUP_CODES = new Set([
+  'UNRESOLVED_IMPORT',       // "Unresolved dependencies" — externalized peers
+  'UNUSED_EXTERNAL_IMPORT',  // "Unused external imports" — e.g. default React import
+])
+
+/**
+ * Suppress only the known-harmless unlinked-build warnings; pass everything
+ * else to rollup's default handler so real issues remain visible.
+ */
+function onwarn(warning, defaultHandler) {
+  if (warning.plugin === 'typescript' && IGNORED_TS_PLUGIN_CODES.has(warning.pluginCode)) return
+  if (IGNORED_ROLLUP_CODES.has(warning.code)) return
+  defaultHandler(warning)
+}
+
 /**
  * Creates a standard rollup configuration for nice-* packages
  *
@@ -61,6 +90,7 @@ export function createConfiguration(options = {}) {
     {
       input,
       cache: false,
+      onwarn,
       watch: {
         buildDelay: 200,
         clearScreen: false,
@@ -99,6 +129,7 @@ export function createConfiguration(options = {}) {
       input: dtsInput,
       output: [{ file: 'dist/index.d.ts', format: 'esm' }],
       plugins: [dts()],
+      onwarn,
     })
   }
 

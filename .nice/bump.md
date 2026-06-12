@@ -2,3 +2,5 @@
 [2026-05-23 21:05] patch: Remove forbidden `prepare: npm run build` hook from package.json (Priority 1.5 normalization). The hook re-runs on every `file:` install in every consumer, cascading rebuilds. `prepublishOnly` covers publishing.
 [2026-05-23 20:07] patch: Drop `rollup-plugin-peer-deps-external` dependency — peer-dependency externalization is now performed inline by `createExternals` in `src/rollup/externals.js` (reads the consumer's package.json peerDependencies and matches with the same exact/subpath rule as nice-*). Consumers no longer need the plugin in devDependencies. Rollup output unchanged.
 [2026-05-07 00:48] minor: Auto-clean dist/ before each rollup build via clean option (default true)
+[2026-06-12 19:21] patch: Suppress known-harmless unlinked-build warnings in createConfiguration via an onwarn filter — TS2307/2875/7006/7031/7026/7016 from externalized peer types and rollup UNRESOLVED_IMPORT/UNUSED_EXTERNAL_IMPORT; all other warnings pass through
+[2026-06-12 19:21] patch: Re-add prepare: npm run build hook to package.json
